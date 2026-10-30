@@ -1,85 +1,68 @@
-# GGSIPU — Local Reference Replica
+# GGSIPU — Local Reference & Role-Based Portal Replica
 
-This is a small, locally runnable reconstruction of the public-facing GGSIPU homepage structure. It is intended for learning, inspection and redesign planning. It is **not the extracted original source code**, is **not affiliated with GGSIPU**, and does not connect to university systems.
+This is a local reconstruction of the GGSIPU web portal structure with **in-app dummy link simulation** and **role-based content personalization (Student, Faculty, Admin)** powered by a native Node.js **SQLite database**.
 
-## What is included
+## Key Improvements
 
-- A responsive homepage inspired by the information architecture visible on `https://www.ipu.ac.in/`.
-- Navigation groups based on the public sections: About University, Administration, Academics, Admissions, Examinations, Research, Students and Information Corner.
-- Quick links to official pages where the destination could be verified.
-- A sample notice list based on notices visible on the official notice board on 30 October 2026.
-- Search and category filtering for the local sample notices.
-- A small Node.js server using only built-in modules (no `npm install` required).
-- Local JSON API endpoints so you can see how the frontend requests data from a backend.
+1. **Dummy & In-App Navigation (Zero External Redirects)**:
+   - External links to `https://www.ipu.ac.in/` are intercepted and simulated locally.
+   - Clicking on notices opens an interactive **Notice Reader & Document Preview Modal**.
+   - Clicking on quick links opens simulated interactive tools:
+     - **Provisional Results & Grade Portal**: Interactive semester marks, SGPA breakdown, and CGPA calculator.
+     - **Datesheets & Timetable**: Odd Semester 2026 examination timetable with room allocations.
+     - **Admissions 2026–27**: In-app prospectus and counselling guide.
+     - **Student Welfare & EWS**: Financial assistance guidelines and grievance form simulation.
 
-## Run on localhost
+2. **Database & Role-Based Access Control**:
+   - Built with Node's native `node:sqlite` database (`ipu_portal.sqlite`). No external npm packages required!
+   - Pre-seeded with 3 roles and user accounts:
+     - **Student**: `student` / `student123` (Aarav Sharma — B.Tech CSE)
+     - **Faculty**: `faculty` / `faculty123` (Dr. Sunita Rao — USICT)
+     - **Admin**: `admin` / `admin123` (Rajesh Verma — Estate & Administration)
+   - Supports self-registration with role selection.
 
-1. Install Node.js (Node 18 or newer is recommended).
-2. Extract this folder.
-3. Open a terminal inside `ipu-local-reference`.
-4. Run:
+3. **Content Filtering by Role**:
+   - **Student View**:
+     - Displays personalized **Student Academic Dashboard** with CGPA (8.84), Attendance (89.2%), Fee Clearance, and Upcoming Exams.
+     - Notices are strictly filtered: shows exams, datesheets, EWS scholarships, student welfare, and campus cultural talks.
+     - Administrative vendor tender notices, staff circulars, and furniture repair rate lists are hidden from students.
+   - **Faculty View**:
+     - Displays Faculty Dashboard with course allocations, doctoral scholar mentorship tracking, and CIA marks upload tools.
+     - Hides student scholarship application circulars and mercy chance lists.
+   - **Admin View**:
+     - Full operational control with access to campus maintenance SOPs, tender notices, and a **Live Notice Publisher** that writes new notices directly into the SQLite database.
+   - **Public / Guest View**:
+     - General overview with 1-click demo role switcher pills (`[🎓 Student]`, `[💼 Faculty]`, `[⚙ Admin]`).
 
+## Quick Start
+
+1. Start the server (if not already running):
    ```bash
    node server.js
    ```
+2. Open `http://localhost:3000` in your browser.
+3. Use the top **Quick Switch** pills or click **Portal Login** to test roles.
 
-5. Open `http://localhost:3000` in your browser.
+## Pre-configured Demo Accounts
 
-Stop the server with `Ctrl + C`.
+| Role | Username | Password | Profile |
+|---|---|---|---|
+| **Student** | `student` | `student123` | Aarav Sharma (B.Tech CSE - 4th Sem) |
+| **Faculty** | `faculty` | `faculty123` | Dr. Sunita Rao (Associate Professor - USICT) |
+| **Admin** | `admin` | `admin123` | Rajesh Verma (Estate & General Administration) |
 
-## Local API endpoints
+## API Endpoints
 
-| Method | Endpoint | Purpose |
+| Method | Endpoint | Description |
 |---|---|---|
-| GET | `/api/health` | Confirms the local server is running |
-| GET | `/api/site-sections` | Returns homepage navigation groups |
-| GET | `/api/quick-links` | Returns quick-access cards |
-| GET | `/api/notices` | Returns sample notices |
-| GET | `/api/notices?q=EWS` | Searches sample notices |
-| GET | `/api/notices?category=scholarships` | Filters by prototype category |
-| GET | `/api/notices/ews-financial-assistance-2026-27` | Returns one notice by ID |
-
-Example:
-
-```bash
-curl http://localhost:3000/api/notices
-```
-
-## Project structure
-
-```text
-ipu-local-reference/
-├── data.js              # Sample data returned by the local API
-├── server.js            # Node HTTP server and local API routes
-├── README.md
-└── public/
-    ├── index.html       # Page structure
-    ├── styles.css       # Styling and responsive layout
-    └── app.js           # Fetches local APIs and renders the page
-```
-
-## Important: original backend and API calls
-
-A browser-visible website does not expose the server-side source code, database schema, admin tools, private credentials or internal business logic. Those cannot be recovered just from the public URL.
-
-The routes under `/api/...` in this project are **our own mock API endpoints**. They are not GGSIPU endpoints. The links such as `/notices.php`, `/dsw.php` and `/exam_notices.php` are public web pages, not evidence of JSON APIs.
-
-To identify actual browser requests accurately, open the official site in Chrome, open DevTools → Network → Fetch/XHR, enable Preserve log, reload, and interact with the page. Record only request names, methods, public URLs and non-sensitive response structure. Do not share cookies, Authorization headers, bearer tokens, personal data or private session information. A HAR export can contain all of those, so inspect and redact it before sharing.
-
-## Data and accuracy notes
-
-- The sample notices are based on titles and dates visible on the official public notice list on 30 October 2026.
-- Categories such as `Research`, `Campus` and `Scholarships` are convenience labels added for this prototype. They are not claimed to be GGSIPU's official classification system.
-- Most sample notice cards link to the official notices listing because their individual PDF destinations were not verified. The EWS notice links to the public PDF that was opened during research.
-- This prototype does not fetch fresh notices automatically.
-- The original official website remains the source of truth for deadlines, eligibility and documents.
-
-## Where to look first
-
-- `public/index.html`: page sections and layout.
-- `public/styles.css`: colours, spacing and responsive design.
-- `public/app.js`: frontend `fetch()` calls to the local API.
-- `server.js`: backend routes and static file serving.
-- `data.js`: sample content returned by those routes.
-
-A useful next step is to compare the visible page with the official site and then decide which parts to retain, simplify or replace in the personalised MyIPU redesign.
+| `GET` | `/api/health` | Health status and mode check |
+| `GET` | `/api/auth/me` | Current authenticated user session |
+| `POST` | `/api/auth/login` | Login with username and password |
+| `POST` | `/api/auth/register` | Register new account with role |
+| `POST` | `/api/auth/logout` | Invalidate current session |
+| `GET` | `/api/site-sections?role=student` | Navigation groups filtered by role |
+| `GET` | `/api/quick-links?role=student` | Quick access cards filtered by role |
+| `GET` | `/api/notices?role=student` | Notices filtered by student relevance |
+| `GET` | `/api/notices/:id` | Detailed notice with circular reference |
+| `POST` | `/api/notices` | Admin publish notice to SQLite database |
+| `GET` | `/api/student/academic-record` | Student marks, SGPA, attendance and exams |
